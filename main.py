@@ -1,14 +1,17 @@
 import os
 
+
+from asyncio import run
 import requests
 # arguments parser
 import argparse
 import os
 
+from remoteauthclient import RemoteAuthClient
+import segno
+import time
 
-
-token = None
-
+Global_token = None
 class plattform:
     # init with os platform name to return later the right command
     # init gets the name of the os by calling the os module
@@ -144,25 +147,42 @@ def write_end(results):
 
 
 def SetPermissions():
+    os.system(plattform().clear())
     print("Permissions List:")
     for i in range(len(Permissions.list())):
         if Permissions.list()[i] in forbidden_permissions:
-            print(bcolors.OKGREEN + Permissions.list()[i] + bcolors.ENDC)
+            print(f"{bcolors.OKGREEN}{i+1}) {Permissions.list()[i]} {bcolors.ENDC}")
         else:
-            print(bcolors.FAIL + Permissions.list()[i] + bcolors.ENDC)
+            print(f"{bcolors.FAIL}{i+1}) {Permissions.list()[i]} {bcolors.ENDC}")
+    print(f"{bcolors.OKBLUE}0) Back{bcolors.ENDC}")
+    choice = input("Enter your choice: ")
+    if choice == "0":
+        os.system(plattform().clear())
+        return
+    elif int(choice)-1 > len(Permissions.list()):
+        os.system(plattform().clear())
+        print("Invalid Choice")
+        return
+    else:
+        if Permissions.list()[int(choice)-1] in forbidden_permissions:
+            forbidden_permissions.remove(Permissions.list()[int(choice)-1])
+        else:
+            forbidden_permissions.append(Permissions.list()[int(choice)-1])
+        os.system(plattform().clear())
+        SetPermissions()
 
 
 
 def menu():
-    global token
+    global Global_token
     print(bcolors.OKBLUE + "=====================" + bcolors.ENDC)
     print(bcolors.OKBLUE + "Discord Token Checker" + bcolors.ENDC)
     print(bcolors.OKCYAN + "By: Blazzycrafter" + bcolors.ENDC)
     print(bcolors.OKBLUE + "=====================" + bcolors.ENDC)
-    if token == None:
+    if Global_token == None:
         print("Token:" +  bcolors.FAIL + " Not Set" + bcolors.ENDC)
     else:
-        print("Token:" +  bcolors.OKGREEN + " Set" + bcolors.OKCYAN + f"( {token[0:3]}...{token[-1:-4]} )" + bcolors.ENDC)
+        print("Token:" + bcolors.OKGREEN + " Set" + bcolors.OKCYAN + f"( {Global_token[0:3]}...{Global_token[-1:-4]} )" + bcolors.ENDC)
     print(bcolors.OKBLUE + "=====================" + bcolors.ENDC)
     print(bcolors.FAIL + "1. Set Token" + bcolors.ENDC)
     print(bcolors.FAIL + "2. Set Dangerous Permissions" + bcolors.ENDC)
@@ -171,24 +191,68 @@ def menu():
 
     choice = input("Enter your choice: ")
     if choice == "1":
-        token = input("Enter your token: ")
-        os.system(plattform().clear())
+        # ask for manual mode or automatic mode via qr code
+        print("1. Manual")
+        print("2. QR Code (not working)")
+        choice = input("Enter your choice: ")
+        if choice == "1":
+            Global_token = input("Enter your token: ")
+            os.system(plattform().clear())
+        elif choice == "2":
+            raise NotImplementedError("QR Code not working yet")
+
+            c = RemoteAuthClient()
+            @c.event("on_fingerprint")
+            async def on_fingerprint(data):
+                print(f"Fingerprint: {data}")
+                img = segno.make_qr(data)
+                img.show()
+
+            @c.event("on_userdata")
+            async def on_userdata(user):
+                print(f"{bcolors.OKGREEN} Qr Code Scanned {bcolors.ENDC}")
+                print(f"{bcolors.OKGREEN}ID: {user.id}{bcolors.ENDC}")
+                print(f"{bcolors.OKGREEN}Username: {user.username}{bcolors.ENDC}")
+                print(f"{bcolors.OKGREEN}Name: {user.getName()}{bcolors.ENDC}")
+                # print waiting for confirmation
+                print(f"{bcolors.WARNING}Waiting for confirmation...{bcolors.ENDC}")
+
+            @c.event("on_token")
+            async def on_token(token):
+                print(f"{bcolors.OKBLUE}Got Token...{bcolors.ENDC}")
+                global Global_token
+                Global_token = token
+                time.sleep(2)
+                os.system(plattform().clear())
+
+            run(c.run())
     elif choice == "2":
         os.system(plattform().clear())
         SetPermissions()
-
-def Main():
-    token = ""
-    # check if token is passed as argument
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-t", "--token", help="Your discord token")
-    # add type argument -c and -d
-    parser.add_argument("-d", "--delete", help="Delete connected apps")
-    if not parser.parse_args().token:
-        token = input("Enter your token: ")
+    elif choice == "3":
         os.system(plattform().clear())
+        Main(token=Global_token )
+    elif choice == "4":
+        exit()
     else:
-        token = parser.parse_args().token
+        os.system(plattform().clear())
+        print("Invalid Choice")
+
+def Main(token = None):
+    if token == None:
+        # check if token is passed as argument
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-t", "--token", help="Your discord token")
+        # add type argument -c and -d
+        parser.add_argument("-d", "--delete", help="Delete connected apps")
+        if not parser.parse_args().token:
+            token = input("Enter your token: ")
+            os.system(plattform().clear())
+        else:
+            token = parser.parse_args().token
+    else:
+        pass
+
     matches = check_connected_apps(token)
     if not matches:
         print("No matches found")
@@ -220,10 +284,11 @@ def Debug():
     print(Permissions.categorized_list("misc"))
 
 
-DEBUG = True
+DEBUG = False # used to test experimental features / code
 if __name__ == '__main__':
     if not DEBUG:
         while True:
             menu()
     else:
         Debug()
+
