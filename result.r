@@ -1,1 +1,1 @@
-none
+Medal
