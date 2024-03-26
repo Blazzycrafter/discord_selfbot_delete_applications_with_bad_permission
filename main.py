@@ -2,14 +2,15 @@ import os
 
 
 from asyncio import run
-import requests
-# arguments parser
-import argparse
 import os
 
+import requests
 from remoteauthclient import RemoteAuthClient
 import segno
 import time
+
+import unifyQrcode
+
 
 Global_token = None
 class plattform:
@@ -193,20 +194,22 @@ def menu():
     if choice == "1":
         # ask for manual mode or automatic mode via qr code
         print("1. Manual")
-        print("2. QR Code (not working)")
+        print("2. QR Code")
         choice = input("Enter your choice: ")
         if choice == "1":
             Global_token = input("Enter your token: ")
             os.system(plattform().clear())
         elif choice == "2":
-            raise NotImplementedError("QR Code not working yet")
+            #raise NotImplementedError("QR Code not working yet")
 
             c = RemoteAuthClient()
             @c.event("on_fingerprint")
             async def on_fingerprint(data):
                 print(f"Fingerprint: {data}")
                 img = segno.make_qr(data)
-                img.show()
+                img.save("qrcode.png")
+                unifyQrcode.unify("qrcode.png")
+                print()
 
             @c.event("on_userdata")
             async def on_userdata(user):
@@ -238,42 +241,19 @@ def menu():
         os.system(plattform().clear())
         print("Invalid Choice")
 
-def Main(token = None):
-    if token == None:
-        # check if token is passed as argument
-        parser = argparse.ArgumentParser()
-        parser.add_argument("-t", "--token", help="Your discord token")
-        # add type argument -c and -d
-        parser.add_argument("-d", "--delete", help="Delete connected apps")
-        if not parser.parse_args().token:
-            token = input("Enter your token: ")
-            os.system(plattform().clear())
-        else:
-            token = parser.parse_args().token
-    else:
-        pass
-
+def Main(token):
     matches = check_connected_apps(token)
     if not matches:
         print("No matches found")
         write_end("none")
-        exit()
-    if not parser.parse_args().token:
-        confirm = input("Are you sure you want to delete these applications? (y/n): ")
-        if confirm == "y":
-            delete_connected_apps(token, matches)
-            deleted = ""
-            for i in matches:
-                deleted += i["application"]["name"] + "\n"
-            write_end(deleted)
-            exit()
-    elif parser.parse_args().delete:
+        return
+    confirm = input("Are you sure you want to delete these applications? (y/n): ")
+    if confirm == "y":
         delete_connected_apps(token, matches)
         deleted = ""
         for i in matches:
             deleted += i["application"]["name"] + "\n"
         write_end(deleted)
-        exit()
     else:
         deleted = ""
         for i in matches:
@@ -291,4 +271,3 @@ if __name__ == '__main__':
             menu()
     else:
         Debug()
-
