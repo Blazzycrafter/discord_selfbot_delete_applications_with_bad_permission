@@ -26,8 +26,6 @@ class plattform:
             return 'clear'
 
 
-
-
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -74,6 +72,7 @@ class Permissions:
             "webhook.incoming"
         ]
         return permissions
+
     @staticmethod
     def category():
         cat = []
@@ -82,6 +81,7 @@ class Permissions:
             if not split[0] in cat:
                 cat.append(split[0])
         return cat
+
     @staticmethod
     def categorized_list(category):
         ls = []
@@ -114,6 +114,7 @@ def delete_connected_apps(token, matches):
             print("Deleted " + i["application"]["name"])
         else:
             print("Failed to delete " + i["application"]["name"])
+
 
 def check_connected_apps(token):
     url = "https://discord.com/api/v9/oauth2/tokens"
@@ -244,6 +245,19 @@ def menu():
         os.system(plattform().clear())
         print("Invalid Choice")
 
+
+def options():
+    while True:
+        print("0. Back")
+        choice = input("Enter your choice: ")
+        if choice == "0":
+            break
+        else:
+            os.system(plattform().clear())
+            print("Invalid Choice")
+
+
+
 def Main(token):
     matches = check_connected_apps(token)
     if not matches:
@@ -264,7 +278,7 @@ def Main(token):
         write_end(deleted)
 
 def Debug():
-    print(Permissions.categorized_list("misc"))
+    options()
 
 
 DEBUG = False # used to test experimental features / code
