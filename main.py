@@ -10,8 +10,16 @@ import segno
 import time
 
 import unifyQrcode
+import random
 
 
+
+legify_settings = {
+    "enabled": True,
+    "forced time": 4,
+    "random time range": 3
+}
+forbidden_permissions = ["guilds.join"]
 Global_token = None
 class plattform:
     # init with os platform name to return later the right command
@@ -99,8 +107,6 @@ class Permissions:
         return ls
 
 
-forbidden_permissions = ["guilds.join"]
-
 
 def delete_connected_apps(token, matches):
     for i in matches:
@@ -114,6 +120,7 @@ def delete_connected_apps(token, matches):
             print("Deleted " + i["application"]["name"])
         else:
             print("Failed to delete " + i["application"]["name"])
+        legify()
 
 
 def check_connected_apps(token):
@@ -218,7 +225,7 @@ def menu():
     print(bcolors.OKBLUE + "=====================" + bcolors.ENDC)
     print(bcolors.FAIL + "1. Set Token" + bcolors.ENDC)
     print(bcolors.FAIL + "2. Set Dangerous Permissions" + bcolors.ENDC)
-    print(bcolors.FAIL + "3. Start" + bcolors.ENDC)
+    print(bcolors.FAIL + "3. Options" + bcolors.ENDC)
     print(bcolors.FAIL + "4. Start" + bcolors.ENDC)
     print("0. Exit")
 
@@ -249,17 +256,53 @@ def menu():
         print("Invalid Choice")
 
 
-def options():
+def legify_settings_menu():
     while True:
-        print("0. Back")
+        if legify_settings["enabled"]:
+            print(f"{bcolors.OKGREEN}1. Legify [ENABLED]{bcolors.ENDC}")
+        else:
+            print(f"{bcolors.FAIL}1. Legify [DISABLED]{bcolors.ENDC}")
+        print(f"{bcolors.OKCYAN}2. set Forced Time [{legify_settings['forced time']}]{bcolors.ENDC}")
+        print(f"{bcolors.OKCYAN}3. set Random Time Range [{legify_settings['random time range']}]{bcolors.ENDC}")
+        print(f"{bcolors.FAIL}0. Back{bcolors.ENDC}")
         choice = input("Enter your choice: ")
         if choice == "0":
             break
-        else:
-            os.system(plattform().clear())
-            print("Invalid Choice")
+        elif choice == "1":
+            if legify_settings["enabled"]:
+                legify_settings["enabled"] = False
+            else:
+                legify_settings["enabled"] = True
+        elif choice == "2":
+            try:
+                legify_settings["forced time"] = int(input("Enter forced time: "))
+            except ValueError:
+                print("Invalid input")
+        elif choice == "3":
+            try:
+                legify_settings["random time range"] = int(input("Enter random time range: "))
+            except ValueError:
+                print("Invalid input")
+        os.system(plattform().clear())
 
 
+def options():
+    while True:
+        print(f"{bcolors.OKGREEN}1. Legify Settings{bcolors.ENDC}")
+        print(f"{bcolors.FAIL}0. Back{bcolors.ENDC}")
+        choice = input("Enter your choice: ")
+        if choice == "0":
+            break
+        elif choice == "1":
+            legify_settings_menu()
+        os.system(plattform().clear())
+
+
+def legify():
+    if not legify_settings["enabled"]:
+        return
+    time.sleep(legify_settings["forced time"])
+    time.sleep(random.randint(0, legify_settings["random time range"]))
 
 def Main(token):
     matches = check_connected_apps(token)
@@ -282,6 +325,9 @@ def Main(token):
 
 def Debug():
     options()
+    for i in range(10):
+        print(i)
+        legify()
 
 
 DEBUG = False # used to test experimental features / code
