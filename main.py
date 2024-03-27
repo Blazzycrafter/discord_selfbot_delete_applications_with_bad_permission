@@ -26,8 +26,6 @@ class plattform:
             return 'clear'
 
 
-
-
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -74,6 +72,7 @@ class Permissions:
             "webhook.incoming"
         ]
         return permissions
+
     @staticmethod
     def category():
         cat = []
@@ -82,6 +81,7 @@ class Permissions:
             if not split[0] in cat:
                 cat.append(split[0])
         return cat
+
     @staticmethod
     def categorized_list(category):
         ls = []
@@ -114,6 +114,7 @@ def delete_connected_apps(token, matches):
             print("Deleted " + i["application"]["name"])
         else:
             print("Failed to delete " + i["application"]["name"])
+
 
 def check_connected_apps(token):
     url = "https://discord.com/api/v9/oauth2/tokens"
@@ -173,6 +174,36 @@ def SetPermissions():
         SetPermissions()
 
 
+def token_qr():
+    c = RemoteAuthClient()
+
+    @c.event("on_fingerprint")
+    async def on_fingerprint(data):
+        print(f"Fingerprint: {data}")
+        img = segno.make_qr(data)
+        img.save("qrcode.png")
+        unifyQrcode.unify("qrcode.png")
+        print()
+
+    @c.event("on_userdata")
+    async def on_userdata(user):
+        print(f"{bcolors.OKGREEN} Qr Code Scanned {bcolors.ENDC}")
+        print(f"{bcolors.OKGREEN}ID: {user.id}{bcolors.ENDC}")
+        print(f"{bcolors.OKGREEN}Username: {user.username}{bcolors.ENDC}")
+        print(f"{bcolors.OKGREEN}Name: {user.getName()}{bcolors.ENDC}")
+        # print waiting for confirmation
+        print(f"{bcolors.WARNING}Waiting for confirmation...{bcolors.ENDC}")
+
+    @c.event("on_token")
+    async def on_token(token):
+        print(f"{bcolors.OKBLUE}Got Token...{bcolors.ENDC}")
+        global Global_token
+        Global_token = token
+        time.sleep(2)
+        os.system(plattform().clear())
+
+    run(c.run())
+
 
 def menu():
     global Global_token
@@ -188,7 +219,7 @@ def menu():
     print(bcolors.FAIL + "1. Set Token" + bcolors.ENDC)
     print(bcolors.FAIL + "2. Set Dangerous Permissions" + bcolors.ENDC)
     print(bcolors.FAIL + "3. Start" + bcolors.ENDC)
-    print("4. Exit")
+    print("0. Exit")
 
     choice = input("Enter your choice: ")
     if choice == "1":
@@ -200,46 +231,32 @@ def menu():
             Global_token = input("Enter your token: ")
             os.system(plattform().clear())
         elif choice == "2":
-            #raise NotImplementedError("QR Code not working yet")
+            token_qr()
 
-            c = RemoteAuthClient()
-            @c.event("on_fingerprint")
-            async def on_fingerprint(data):
-                print(f"Fingerprint: {data}")
-                img = segno.make_qr(data)
-                img.save("qrcode.png")
-                unifyQrcode.unify("qrcode.png")
-                print()
-
-            @c.event("on_userdata")
-            async def on_userdata(user):
-                print(f"{bcolors.OKGREEN} Qr Code Scanned {bcolors.ENDC}")
-                print(f"{bcolors.OKGREEN}ID: {user.id}{bcolors.ENDC}")
-                print(f"{bcolors.OKGREEN}Username: {user.username}{bcolors.ENDC}")
-                print(f"{bcolors.OKGREEN}Name: {user.getName()}{bcolors.ENDC}")
-                # print waiting for confirmation
-                print(f"{bcolors.WARNING}Waiting for confirmation...{bcolors.ENDC}")
-
-            @c.event("on_token")
-            async def on_token(token):
-                print(f"{bcolors.OKBLUE}Got Token...{bcolors.ENDC}")
-                global Global_token
-                Global_token = token
-                time.sleep(2)
-                os.system(plattform().clear())
-
-            run(c.run())
     elif choice == "2":
         os.system(plattform().clear())
         SetPermissions()
     elif choice == "3":
         os.system(plattform().clear())
-        Main(token=Global_token )
-    elif choice == "4":
+        Main(token=Global_token)
+    elif choice == "0":
         exit()
     else:
         os.system(plattform().clear())
         print("Invalid Choice")
+
+
+def options():
+    while True:
+        print("0. Back")
+        choice = input("Enter your choice: ")
+        if choice == "0":
+            break
+        else:
+            os.system(plattform().clear())
+            print("Invalid Choice")
+
+
 
 def Main(token):
     matches = check_connected_apps(token)
@@ -261,7 +278,7 @@ def Main(token):
         write_end(deleted)
 
 def Debug():
-    print(Permissions.categorized_list("misc"))
+    options()
 
 
 DEBUG = False # used to test experimental features / code
