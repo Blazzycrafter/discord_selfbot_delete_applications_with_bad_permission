@@ -219,6 +219,7 @@ def menu():
     print(bcolors.FAIL + "1. Set Token" + bcolors.ENDC)
     print(bcolors.FAIL + "2. Set Dangerous Permissions" + bcolors.ENDC)
     print(bcolors.FAIL + "3. Start" + bcolors.ENDC)
+    print(bcolors.FAIL + "4. Start" + bcolors.ENDC)
     print("0. Exit")
 
     choice = input("Enter your choice: ")
@@ -237,6 +238,8 @@ def menu():
         os.system(plattform().clear())
         SetPermissions()
     elif choice == "3":
+        options()
+    elif choice == "4":
         os.system(plattform().clear())
         Main(token=Global_token)
     elif choice == "0":
