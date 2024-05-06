@@ -1,16 +1,33 @@
 import os
-
-
+import random
+import time
 from asyncio import run
-import os
 
 import requests
-from remoteauthclient import RemoteAuthClient
 import segno
-import time
+from remoteauthclient import RemoteAuthClient
 
 import unifyQrcode
-import random
+
+# load whitelist:#
+
+whitelist = []
+whitelist_desc = []
+with open("whitelist.txt", "r") as f:
+    whitelist_l = f.read().splitlines()
+    for c in whitelist_l:
+        c, d = c.split("#")
+        c = c.strip()
+        d = d.strip()
+        if c != "":
+            whitelist.append(c)
+            if d != "":
+                whitelist_desc.append(d)
+            else:
+                whitelist_desc.append("[NO DESC]")
+
+
+
 
 
 
@@ -19,6 +36,12 @@ legify_settings = {
     "forced time": 4,
     "random time range": 3
 }
+
+whitelist_settings = {
+    "enabled": True,
+    "whitelist": whitelist
+}
+
 forbidden_permissions = ["guilds.join"]
 Global_token = None
 class plattform:
@@ -110,6 +133,9 @@ class Permissions:
 
 def delete_connected_apps(token, matches):
     for i in matches:
+        if is_whitelisted(i["application"]["id"]):
+            print("Skipping " + i["application"]["name"] + " (whitelisted)")
+            continue
         url = "https://discord.com/api/v9/oauth2/tokens/" + i["id"]
         headers = {
             "Authorization": token,
@@ -213,6 +239,7 @@ def token_qr():
 
 
 def menu():
+    os.system(plattform().clear())
     global Global_token
     print(bcolors.OKBLUE + "=====================" + bcolors.ENDC)
     print(bcolors.OKBLUE + "Discord Token Checker" + bcolors.ENDC)
@@ -251,9 +278,6 @@ def menu():
         Main(token=Global_token)
     elif choice == "0":
         exit()
-    else:
-        os.system(plattform().clear())
-        print("Invalid Choice")
 
 
 def legify_settings_menu():
@@ -286,17 +310,47 @@ def legify_settings_menu():
         os.system(plattform().clear())
 
 
+def whitelist_settings_menu():
+    # todo: change legify_settings to whitelist_settings
+    while True:
+        if whitelist_settings["enabled"]:
+            print(f"{bcolors.OKGREEN}1. Whitelist [ENABLED]{bcolors.ENDC}")
+        else:
+            print(f"{bcolors.FAIL}1. Whitelist [DISABLED]{bcolors.ENDC}")
+        print(f"{bcolors.OKCYAN}2. List whitelist{bcolors.ENDC}")
+        print(f"{bcolors.FAIL}0. Back{bcolors.ENDC}")
+        choice = input("Enter your choice: ")
+        if choice == "0":
+            break
+        elif choice == "1":
+            if whitelist_settings["enabled"]:
+                whitelist_settings["enabled"] = False
+            else:
+                whitelist_settings["enabled"] = True
+        elif choice == "2":
+            print("Whitelist:")
+            for i in range(len(whitelist)):
+                print(f"{bcolors.OKCYAN}{whitelist[i]} #{whitelist_desc[i]}{bcolors.ENDC}")
+            input("Press Enter to continue...")
+        os.system(plattform().clear())
+
 def options():
     while True:
         print(f"{bcolors.OKGREEN}1. Legify Settings{bcolors.ENDC}")
+        print(f"{bcolors.OKGREEN}2. Whitelist Settings{bcolors.ENDC}")
         print(f"{bcolors.FAIL}0. Back{bcolors.ENDC}")
         choice = input("Enter your choice: ")
         if choice == "0":
             break
         elif choice == "1":
             legify_settings_menu()
+        elif choice == "2":
+            whitelist_settings_menu()
         os.system(plattform().clear())
 
+
+def is_whitelisted(client_id):
+    return whitelist_settings["enabled"] and client_id in whitelist
 
 def legify():
     if not legify_settings["enabled"]:
@@ -325,9 +379,9 @@ def Main(token):
 
 def Debug():
     options()
-    for i in range(10):
-        print(i)
-        legify()
+    CID = input("Enter Client ID: ")
+    print(f"is whitelisted: {is_whitelisted(CID)}")
+
 
 
 DEBUG = False # used to test experimental features / code
