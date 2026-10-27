@@ -1,54 +1,33 @@
 # Discord Application Permission Deleter
 
-Ein Python-Skript zum Löschen von Anwendungen mit definierten verbotenen Berechtigungen.
+Python-Skript zum Widerrufen autorisierter Discord-Anwendungen mit definierten verbotenen OAuth2-Scopes.
+
+Nutzt Discord API **v10** und die aktuelle Scope-Liste (inkl. Social SDK / RPC).
+
+Automatisierung eines Nutzerkontos verstößt gegen die Discord-Nutzungsbedingungen und kann zur Kontosperre führen. Nur mit dem eigenen Konto verwenden.
 
 ## Installation
 
-Um das Projekt zu installieren, folge diesen Schritten:
+1. Python 3.11+ empfohlen (Pillow 13 braucht mindestens 3.11).
 
-1. Klone das Repository:
-
-    ```bash
-    git clone <Repository-URL> Discord-Application-Permission-Deleter
-    ```
-
-2. Navigiere in das geklonte Verzeichnis:
-
-    ```bash
-    cd Discord-Application-Permission-Deleter
-    ```
-
-3. Installiere die erforderlichen Abhängigkeiten mit pip:
+2. Abhängigkeiten:
 
     ```bash
     pip install -r requirements.txt
     ```
 
-Nachdem diese Schritte abgeschlossen sind, ist das Projekt einsatzbereit.
-
 ## Verwendung
 
-So verwendest du das Skript:
+1. `starten.bat` doppelklicken (schönes Konsolenfenster) oder `python main.py`
 
-1. Starte das Skript.
+2. Token setzen (Option `1`):
+    - manuell, oder
+    - per QR-Code (Discord-App scannen und bestätigen)
 
-2. Gib den Token ein:
-    - Du kannst den Token wahlweise per QR-Code (bevorzugt, weil einfacher) oder manuell eingeben.
-  
-3. Setze alle Berechtigungen, die verboten sein sollen:
-    - Verwende die Option "2", um alle Berechtigungen festzulegen, die verboten sein sollen.
-    - Mit der Option "0" kannst du zurückkehren, falls erforderlich.
+3. Verbotene Berechtigungen setzen (Option `2`). Standard: `guilds.join`. Grün = aktuell verboten.
 
-4. Starte den Prozess und überprüfe, ob die Anwendungs-Auswahl korrekt ist:
-    - Verwende die Option "3", um den Prozess zu starten und die Anwendungsauswahl zu überprüfen.
-    - Bestätige mit "y", wenn alles in Ordnung ist, andernfalls breche mit "n" ab.
-    - Die Anwendungsverbindungen werden gelöscht, soweit es möglich ist, wenn die Bestätigung erfolgt.
+4. Optional Whitelist in `whitelist.txt` (`client_id # beschreibung`).
 
-Folge diesen Schritten, um das Skript erfolgreich auszuführen.
+5. Start (Option `4`), Treffer prüfen, mit `y` widerrufen.
 
-
-## Lizenz
-
-Dieses Projekt ist unter der MIT-Lizenz veröffentlicht - siehe die [LICENSE](LICENSE) Datei für Details.
-
-Die MIT-Lizenz ist eine sehr liberale Open-Source-Lizenz, die es anderen erlaubt, dieses Projekt zu verwenden, zu modifizieren und zu verbreiten, solange die Lizenzbedingungen eingehalten werden. Es wird keine Haftung übernommen. Bitte beachte jedoch, dass die Lizenzbedingungen der MIT-Lizenz in der [LICENSE](LICENSE) Datei enthalten sind und beachtet werden müssen.
+Treffer bzw. gelöschte Apps stehen danach in `result.r`.
