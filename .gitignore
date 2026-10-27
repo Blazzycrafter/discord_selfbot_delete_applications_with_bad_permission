@@ -1,2 +1,4 @@
-/result.r
-/qrcode.png
+result.r
+qrcode.png
+.idea/
+__pycache__/
